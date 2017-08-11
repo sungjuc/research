@@ -1,3 +1,3 @@
 # Reserch Projects
 
-1. Variable length queue
+1. Variable Length Queue Thread Pool
