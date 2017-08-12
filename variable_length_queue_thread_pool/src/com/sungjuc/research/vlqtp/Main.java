@@ -1,5 +1,6 @@
 package com.sungjuc.research.vlqtp;
 
+import com.sungjuc.research.common.utils.api.Logging;
 import com.sungjuc.research.common.utils.api.Server;
 import com.sungjuc.research.common.utils.impl.ClientImpl;
 import java.util.concurrent.BlockingQueue;
@@ -11,8 +12,7 @@ import java.util.logging.Logger;
 
 
 public class Main {
-  public static final long TEST_SIZE = 100;
-  public static long TIME_OUT_SIZE = 0;
+  public static final long TEST_SIZE = 1000;
   public static long RETURN_SIZE = 0;
   public static int TIME_OUT = 2000;
 
@@ -22,19 +22,23 @@ public class Main {
       throws Exception {
     logger.info("Main start!!!");
 
-    BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(10);
-    ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, workQueue);
+    Logging logging = new Logging();
+
+    BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(20);
+    ExecutorService executorService = new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS, workQueue);
     Server server = new ServerImpl(executorService);
 
-    ClientImpl client = new ClientImpl(10, TEST_SIZE, TIME_OUT);
-    TIME_OUT_SIZE = 0;
+    ClientImpl client = new ClientImpl(100, TEST_SIZE, TIME_OUT);
     RETURN_SIZE = 0;
+
     client.start(server);
 
-    while (RETURN_SIZE + TIME_OUT_SIZE < TEST_SIZE) {
+    while (RETURN_SIZE < TEST_SIZE) {
       Thread.sleep(1000);
       logger.info("RETURN: " + RETURN_SIZE + " out of " + TEST_SIZE);
     }
+
+    server.stop();
 
     logger.info("DONE");
   }

@@ -32,9 +32,15 @@ public class ServerImpl implements Server {
       _executorService.submit(context);
     } catch (RejectedExecutionException e) {
       logger.severe("REJECTED Exception!!!");
+      context.tick(Status.DEQUEUE);
       Response response = new ResponseIml(ResponseCode.R_520);
       context.wrap(response);
     }
     return false;
+  }
+
+  @Override
+  public void stop() {
+    _executorService.shutdown();
   }
 }

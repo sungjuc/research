@@ -1,5 +1,6 @@
 package com.sungjuc.research.common.utils.impl;
 
+import com.sungjuc.research.common.utils.api.Logging;
 import com.sungjuc.research.common.utils.api.Request;
 import com.sungjuc.research.common.utils.api.Response;
 import com.sungjuc.research.common.utils.api.Context;
@@ -40,15 +41,12 @@ public class ContextImpl implements Context {
     try {
       if(_request.isTimeOut()) {
         response = new ResponseIml(ResponseCode.R_511);
-        Main.TIME_OUT_SIZE++;
       } else {
         Thread.sleep(_processingTime);
         if (_request.isTimeOut()) {
           response = new ResponseIml(ResponseCode.R_512);
-          Main.TIME_OUT_SIZE++;
         } else {
           response = new ResponseIml(ResponseCode.R_200);
-          Main.RETURN_SIZE++;
         }
       }
     } catch (InterruptedException e) {
@@ -69,7 +67,8 @@ public class ContextImpl implements Context {
   @Override
   public void wrap(Response response) {
     _response = response;
-    _logger.info(this.toString());
+    Main.RETURN_SIZE++;
+    Logging.PUBLIC_ACCESS_LOGGER.info(this.toString());
   }
 
   @Override
@@ -93,8 +92,9 @@ public class ContextImpl implements Context {
   }
 
   public String toString(){
+    long latency = _response.getCreationTime() - _request.getCreationTime();
     StringBuilder sb = new StringBuilder();
-    sb.append(_request).append(this.toLog()).append(_response);
+    sb.append(_request).append(this.toLog()).append(_response).append(" in ").append(latency).append(" ms");
     return sb.toString();
   }
 

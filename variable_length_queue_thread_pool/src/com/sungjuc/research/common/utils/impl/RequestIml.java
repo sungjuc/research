@@ -19,4 +19,12 @@ public class RequestIml implements Request {
   public boolean isTimeOut() {
     return (System.currentTimeMillis() - _creationTime) > _timeout;
   }
+
+  public String toString() {
+    return "";
+  }
+
+  public long getCreationTime() {
+    return _creationTime;
+  }
 }

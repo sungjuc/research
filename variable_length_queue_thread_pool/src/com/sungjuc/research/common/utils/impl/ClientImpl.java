@@ -32,6 +32,6 @@ public class ClientImpl {
       Thread.sleep(_intervalMilis, _intervalNanos);
       _logger.info(_totalRequests +"/" +_totalTestRequests);
     }
-    _logger.info("Done");
+    _logger.info("Done! total requests:" + _totalRequests);
   }
 }
