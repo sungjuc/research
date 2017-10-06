@@ -1,16 +1,13 @@
 package com.sungjuc.research.common.utils.impl;
 
+import com.sungjuc.research.common.utils.api.Context;
 import com.sungjuc.research.common.utils.api.Logging;
 import com.sungjuc.research.common.utils.api.Request;
 import com.sungjuc.research.common.utils.api.Response;
-import com.sungjuc.research.common.utils.api.Context;
 import com.sungjuc.research.common.utils.api.ResponseCode;
 import com.sungjuc.research.common.utils.api.Status;
-import com.sungjuc.research.vlqtp.Main;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
-
-import static com.sungjuc.research.common.utils.api.Status.*;
-import static com.sungjuc.research.common.utils.api.Status.CREATE;
 
 
 public class ContextImpl implements Context {
@@ -22,15 +19,16 @@ public class ContextImpl implements Context {
   private Request _request;
   private Response _response;
 
-
+  private AtomicLong _returnCounter;
   private long _creationTime = 0;
-  private long _enqueuTime = 0;
+  private long _enqueueTime = 0;
   private long _dequeueTime = 0;
   private long _processTime = 0;
 
-  public ContextImpl() {
+  public ContextImpl(long processingTime, AtomicLong returnCounter) {
     tick(Status.CREATE);
-    _processingTime = 1000;
+    _processingTime = processingTime;
+    _returnCounter = returnCounter;
   }
 
   @Override
@@ -39,7 +37,7 @@ public class ContextImpl implements Context {
     Response response = null;
     _processStartTime = System.currentTimeMillis();
     try {
-      if(_request.isTimeOut()) {
+      if (_request.isTimeOut()) {
         response = new ResponseIml(ResponseCode.R_511);
       } else {
         Thread.sleep(_processingTime);
@@ -67,7 +65,7 @@ public class ContextImpl implements Context {
   @Override
   public void wrap(Response response) {
     _response = response;
-    Main.RETURN_SIZE++;
+    _returnCounter.incrementAndGet();
     Logging.PUBLIC_ACCESS_LOGGER.info(this.toString());
   }
 
@@ -78,7 +76,7 @@ public class ContextImpl implements Context {
         _creationTime = System.currentTimeMillis();
         break;
       case ENQUEUE:
-        _enqueuTime = System.currentTimeMillis();
+        _enqueueTime = System.currentTimeMillis();
         break;
       case DEQUEUE:
         _dequeueTime = System.currentTimeMillis();
@@ -91,7 +89,7 @@ public class ContextImpl implements Context {
     }
   }
 
-  public String toString(){
+  public String toString() {
     long latency = _response.getCreationTime() - _request.getCreationTime();
     StringBuilder sb = new StringBuilder();
     sb.append(_request).append(this.toLog()).append(_response).append(" in ").append(latency).append(" ms");
@@ -100,8 +98,8 @@ public class ContextImpl implements Context {
 
   public String toLog() {
     StringBuilder sb = new StringBuilder();
-    sb.append("creation=").append(_enqueuTime - _creationTime).append(", ");
-    sb.append("queue=").append(_dequeueTime - _enqueuTime).append(", ");
+    sb.append("creation=").append(_enqueueTime - _creationTime).append(", ");
+    sb.append("queue=").append(_dequeueTime - _enqueueTime).append(", ");
     sb.append("process=").append(_processTime - _dequeueTime).append(", ");
     sb.append("process2=").append(_processEndTime - _processStartTime).append(", ");
     sb.append("processN=").append(_processingTime).append(", ");

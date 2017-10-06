@@ -8,9 +8,10 @@ import java.util.logging.Logger;
 public class RequestIml implements Request {
   private final long _creationTime;
   private final long _timeout;
-  private Context _context;
+  private final long _processingTime;
 
-  RequestIml(long timeout) {
+  RequestIml(long timeout, long processingTime) {
+    _processingTime = processingTime;
     _timeout = timeout;
     _creationTime = System.currentTimeMillis();
   }
@@ -26,5 +27,10 @@ public class RequestIml implements Request {
 
   public long getCreationTime() {
     return _creationTime;
+  }
+
+  @Override
+  public long getProcessingTime() {
+    return _processingTime;
   }
 }

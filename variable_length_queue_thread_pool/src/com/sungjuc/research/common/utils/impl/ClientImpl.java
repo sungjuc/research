@@ -11,9 +11,10 @@ public class ClientImpl {
 
   private long _totalTestRequests;
   private long _totalRequests;
+  private long _processingTime;
   private int _timeout;
 
-  public ClientImpl(int qps, long totalTestRequests, int timeout) {
+  public ClientImpl(int qps, long totalTestRequests, int timeout, long processingTime) {
     long interval = (1000L * 1000000) / qps;
     _intervalMilis = interval / 1000000;
     _intervalNanos = (int) (interval % 1000000);
@@ -21,13 +22,14 @@ public class ClientImpl {
     _totalTestRequests = totalTestRequests;
     _totalRequests = 0;
     _timeout = timeout;
+    _processingTime = processingTime;
   }
 
   public void start(Server server)
       throws Exception {
     _logger.info("Start sending requests");
     while (_totalRequests < _totalTestRequests) {
-      server.handle(new RequestIml(_timeout));
+      server.handle(new RequestIml(_timeout, _processingTime));
       _totalRequests++;
       Thread.sleep(_intervalMilis, _intervalNanos);
       _logger.info(_totalRequests +"/" +_totalTestRequests);

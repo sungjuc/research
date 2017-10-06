@@ -1,4 +1,4 @@
-package com.sungjuc.research.vlqtp;
+package com.sungjuc.research.common.utils.impl;
 
 import com.sungjuc.research.common.utils.api.Context;
 import com.sungjuc.research.common.utils.api.Request;
@@ -6,26 +6,26 @@ import com.sungjuc.research.common.utils.api.Response;
 import com.sungjuc.research.common.utils.api.ResponseCode;
 import com.sungjuc.research.common.utils.api.Server;
 import com.sungjuc.research.common.utils.api.Status;
-import com.sungjuc.research.common.utils.impl.ContextImpl;
-import com.sungjuc.research.common.utils.impl.ResponseIml;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 
 public class ServerImpl implements Server {
   private static final Logger logger = Logger.getLogger(ServerImpl.class.getName());
   private final ExecutorService _executorService;
+  private final AtomicLong _returnCounter;
 
-  ServerImpl(ExecutorService excutorService) {
+  public ServerImpl(ExecutorService executorService, AtomicLong returnCounter) {
     logger.info("Initializing Server.");
-    _executorService = excutorService;
+    _executorService = executorService;
+    _returnCounter = returnCounter;
   }
 
   @Override
   public boolean handle(Request request) {
-    Context context = new ContextImpl();
+    Context context = new ContextImpl(request.getProcessingTime(), _returnCounter);
     context.init(request);
     try {
       context.tick(Status.ENQUEUE);
@@ -33,6 +33,7 @@ public class ServerImpl implements Server {
     } catch (RejectedExecutionException e) {
       logger.severe("REJECTED Exception!!!");
       context.tick(Status.DEQUEUE);
+      context.tick(Status.PROCESSING);
       Response response = new ResponseIml(ResponseCode.R_520);
       context.wrap(response);
     }
